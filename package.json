@@ -1,0 +1,26 @@
+{
+  "name": "yuvjs",
+  "version": "1.0.0",
+  "description": "read and write yuv files",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/parence/yuvjs.git"
+  },
+  "keywords": [
+    "yuv"
+  ],
+  "author": "Nicola Giuliani",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/parence/yuvjs/issues"
+  },
+  "homepage": "https://github.com/parence/yuvjs#readme",
+  "devDependencies": {
+    "@tsconfig/node16": "^1.0.2"
+  }
+}
