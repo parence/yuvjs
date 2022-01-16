@@ -10,7 +10,7 @@ type YuvComponentKey = "y" | "u" | "v";
 type YuvComponent = Uint8Array | Uint16Array | Uint32Array;
 type YuvComponents = { y: YuvComponent; u?: YuvComponent; v?: YuvComponent };
 
-interface IYuv {
+export interface IYuv {
   y: YuvComponent;
   u?: YuvComponent;
   v?: YuvComponent;
@@ -72,7 +72,11 @@ class Yuv implements IYuv {
 /*
 read a YUV frame
 */
-async function read(src: string, dims: [number, number], cfg?: FrameCfg) {
+async function read(
+  src: string,
+  dims: [number, number],
+  cfg?: FrameCfg
+): Promise<Yuv> {
   const _cfg: FrameCfg = { ...{ format: "420", bits: 8, idx: 0 }, ...cfg };
   const bits = _cfg.bits!;
   const format = _cfg.format;
@@ -110,7 +114,7 @@ async function read(src: string, dims: [number, number], cfg?: FrameCfg) {
 
   const nr_frames = (await stat(src)).size / FRAME_BYTES;
   if (idx >= nr_frames) {
-    let err = `Can't access frame with idx ${idx}! `
+    let err = `Can't access frame with idx ${idx}! `;
     err += `The file only has ${nr_frames} frames!`;
     throw new Error(err);
   }
