@@ -1,3 +1,5 @@
+import { nearestNeighbor } from "./resize";
+
 export type YuvComponentKey = "y" | "u" | "v";
 export type YuvComponent = Uint8Array | Uint16Array | Uint32Array;
 export type YuvComponents = {
@@ -50,6 +52,18 @@ export class Yuv implements IYuv {
     this.bits = bits;
   }
 
+  get widthChroma() {
+    if (this.format === "444") return this.width;
+    if (this.format === "420") return Math.round(this.width / 2);
+    throw Error(`${this.format} has no chroma component!`);
+  }
+
+  get heightChroma() {
+    if (this.format === "444") return this.height;
+    if (this.format === "420") return Math.round(this.height / 2);
+    throw Error(`${this.format} has no chroma component!`);
+  }
+
   get format(): YuvFormat {
     if (!this.u && !this.v) return "400";
 
@@ -86,5 +100,50 @@ export class Yuv implements IYuv {
       0
     );
     return bytes;
+  }
+
+  /*
+    returns a new Yuv object in the specified format
+  */
+  as(format: YuvFormat) {
+    if (this.format === "400") throw Error("Unsupported conversion!");
+
+    if (format === "400") {
+      //   return new Yuv({ y: this.y.buffer }, this.width, this.height, this.bits);
+      // TODO
+      throw Error("Not implemented!");
+    }
+
+    const upsample = (() => {
+      if (this.format === "420" && format === "444") return true;
+      if (this.format === "444" && format === "420") return false;
+      throw Error("Unsupported conversion!");
+    })();
+
+    const new_dims = {
+      width: upsample ? this.widthChroma * 2 : Math.round(this.widthChroma / 2),
+      height: upsample
+        ? this.heightChroma * 2
+        : Math.round(this.heightChroma / 2),
+    };
+
+    return new Yuv(
+      {
+        y: this.y,
+        u: nearestNeighbor(
+          this.u!,
+          { width: this.widthChroma, height: this.heightChroma },
+          new_dims
+        ),
+        v: nearestNeighbor(
+          this.v!,
+          { width: this.widthChroma, height: this.heightChroma },
+          new_dims
+        ),
+      },
+      this.width,
+      this.height,
+      this.bits
+    );
   }
 }
