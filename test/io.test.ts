@@ -23,7 +23,7 @@ test.each([
   }
 );
 
-const files_frames: Array<Array<any>> = [];
+const files_frames: Array<Array<string | number>> = [];
 const frames = [0, 20, 54];
 const files = Object.keys(test_files);
 // const files = ['stars_444'], frames = [0, 55];
@@ -48,7 +48,7 @@ test.each(files_frames)(
     const frame_cfg = { format: file.format, bits: file.bits };
     const yuv = await read(path, [height, width], {
       ...frame_cfg,
-      ...{ idx: frame_idx },
+      ...{ idx: <number>frame_idx },
     });
 
     await write(o_path, yuv, 0);
@@ -79,11 +79,11 @@ test.each(files_frames)(
       [file.dimensions.height, file.dimensions.width],
       {
         ...frame_cfg,
-        ...{ idx: frame_idx },
+        ...{ idx: <number>frame_idx },
       }
     );
 
-    await write(o_path, frame, frame_idx);
+    await write(o_path, frame, <number>frame_idx);
 
     expect((await stat(o_path)).size).toBe((await stat(file.path)).size);
 
@@ -92,7 +92,7 @@ test.each(files_frames)(
       [file.dimensions.height, file.dimensions.width],
       {
         ...frame_cfg,
-        ...{ idx: frame_idx },
+        ...{ idx: <number>frame_idx },
       }
     );
 

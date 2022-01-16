@@ -61,7 +61,7 @@ class Yuv implements IYuv {
   get bytes_per_frame() {
     const bytes = this.components.reduce<number>(
       (bytes: number, comp: YuvComponentKey) => {
-        return bytes + this[comp]!.byteLength;
+        return bytes + (this[comp]?.byteLength ?? 0);
       },
       0
     );
@@ -78,9 +78,9 @@ async function read(
   cfg?: FrameCfg
 ): Promise<Yuv> {
   const _cfg: FrameCfg = { ...{ format: "420", bits: 8, idx: 0 }, ...cfg };
-  const bits = _cfg.bits!;
-  const format = _cfg.format;
-  const idx = _cfg.idx!;
+  const bits = <number>_cfg.bits;
+  const format = <string>_cfg.format;
+  const idx = <number>_cfg.idx;
 
   const dtypes = {
     1: Uint8Array,
@@ -120,7 +120,7 @@ async function read(
   }
 
   const file = await open(src, "r");
-  let frame: Record<string, YuvComponent> = {};
+  const frame: Record<string, YuvComponent> = {};
   for (let index = 0; index < planes.length; index++) {
     const plane = planes[index];
 
@@ -137,7 +137,7 @@ async function read(
   }
   file.close();
 
-  let [width, height] = dims;
+  const [width, height] = dims;
   return new Yuv(<YuvComponents>frame, width, height, bits);
 }
 
