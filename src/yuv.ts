@@ -5,6 +5,7 @@ export type YuvComponents = {
   u?: YuvComponent;
   v?: YuvComponent;
 };
+export type YuvFormat = "444" | "420" | "400";
 
 export interface IYuv {
   y: YuvComponent;
@@ -35,10 +36,33 @@ export class Yuv implements IYuv {
     if (_comps.u) this.u = _comps.u;
     if (_comps.v) this.v = _comps.v;
 
+    if (this.y.length != width * height) {
+      let err = `Provided width ${width} and height ${height} do not `;
+      err += `match length of provided Y component ${this.y.length}`;
+      throw Error(err);
+    }
+
+    this.format; // check for invalid format
+
     this.width = width;
     this.height = height;
 
     this.bits = bits;
+  }
+
+  get format(): YuvFormat {
+    if (!this.u && !this.v) return "400";
+
+    const u_sz = this.u?.length;
+    const v_sz = this.v?.length;
+
+    if (u_sz !== v_sz)
+      throw Error(`U (${u_sz}) and V (${v_sz}) dimensions dot not match!`);
+
+    if (this.y.length === u_sz) return "444";
+    if (0.25 * this.y.length === u_sz) return "420";
+
+    throw Error("Invalid format!");
   }
 
   get components() {

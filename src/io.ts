@@ -1,8 +1,14 @@
 import { open, stat } from "fs/promises";
-import { Yuv, YuvComponents, YuvComponent, YuvComponentKey } from "./yuv";
+import {
+  Yuv,
+  YuvComponents,
+  YuvComponent,
+  YuvComponentKey,
+  YuvFormat,
+} from "./yuv";
 
 export interface FrameCfg {
-  format?: string;
+  format?: YuvFormat;
   bits?: number;
   idx?: number;
 }
