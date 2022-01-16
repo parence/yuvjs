@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "read and write yuv files",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "./dist/"
+  ],
   "scripts": {
     "test": "jest",
     "build": "tsc",
