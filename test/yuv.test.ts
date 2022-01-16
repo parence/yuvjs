@@ -73,3 +73,55 @@ test.each([
     expect(yuv).toThrow();
   }
 );
+
+test("converts yuv 420 to yuv 444", () => {
+  const yuv420 = new Yuv(
+    {
+      y: new Uint8Array([1, 1, 1, 1]),
+      u: new Uint8Array([2]),
+      v: new Uint8Array([3]),
+    },
+    2,
+    2,
+    8
+  );
+
+  const yuv444 = yuv420.as("444");
+
+  expect(yuv444.format).toBe("444");
+
+  expect(yuv444.width).toBe(yuv420.width);
+  expect(yuv444.height).toBe(yuv420.height);
+  expect(yuv444.widthChroma).toBe(yuv444.width);
+  expect(yuv444.heightChroma).toBe(yuv444.height);
+
+  expect(yuv444.y).toEqual(yuv420.y);
+  expect(yuv444.u).toStrictEqual(new Uint8Array([2, 2, 2, 2]));
+  expect(yuv444.v).toStrictEqual(new Uint8Array([3, 3, 3, 3]));
+});
+
+test("converts yuv 444 to yuv 420", () => {
+  const yuv444 = new Yuv(
+    {
+      y: new Uint8Array([1, 1, 1, 1]),
+      u: new Uint8Array([2, 2, 2, 2]),
+      v: new Uint8Array([3, 3, 3, 3]),
+    },
+    2,
+    2,
+    8
+  );
+
+  const yuv420 = yuv444.as("420");
+
+  expect(yuv420.format).toBe("420");
+
+  expect(yuv420.width).toBe(yuv444.width);
+  expect(yuv420.height).toBe(yuv444.height);
+  expect(yuv420.widthChroma).toBe(yuv444.width / 2);
+  expect(yuv420.heightChroma).toBe(yuv444.height / 2);
+
+  expect(yuv420.y).toEqual(yuv444.y);
+  expect(yuv420.u).toStrictEqual(new Uint8Array([2]));
+  expect(yuv420.v).toStrictEqual(new Uint8Array([3]));
+});
