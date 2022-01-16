@@ -1,8 +1,36 @@
 import { files as test_files, test_o_path } from "./config";
 import { read, write } from "../src/io";
 import { copyFile, stat } from "fs/promises";
+import { YuvFormat } from "../src/yuv";
 
 type TestFileKey = keyof typeof test_files;
+
+test.each([
+  [0, "ducks_420"],
+  [10, "ducks_420"],
+  [50, "ducks_420"],
+  [0, "stars_420"],
+  [10, "stars_420"],
+  [50, "stars_420"],
+  [0, "stars_444"],
+  [10, "stars_444"],
+  [50, "stars_444"],
+])(
+  "should throw when reading frame (idx = %d) > #frames in file (%s)",
+  async (frame_idx, file_id) => {
+    const file = test_files[<TestFileKey>file_id];
+    const yuv = await read(
+      file.path,
+      [file.dimensions.height, file.dimensions.width],
+      {
+        format: file.format as YuvFormat,
+        bits: file.bits,
+        idx: frame_idx,
+      }
+    );
+    expect(yuv.format).toBe(file.format);
+  }
+);
 
 test.each([
   [500, "ducks_420"],
@@ -14,7 +42,7 @@ test.each([
     const _read = async () => {
       const file = test_files[<TestFileKey>file_id];
       await read(file.path, [file.dimensions.height, file.dimensions.width], {
-        format: file.format,
+        format: file.format as YuvFormat,
         bits: file.bits,
         idx: frame_idx,
       });
@@ -45,7 +73,7 @@ test.each(files_frames)(
 
     const o_path = test_o_path + file_id + "_" + frame_idx + ".yuv";
 
-    const frame_cfg = { format: file.format, bits: file.bits };
+    const frame_cfg = { format: file.format as YuvFormat, bits: file.bits };
     const yuv = await read(path, [height, width], {
       ...frame_cfg,
       ...{ idx: <number>frame_idx },
@@ -73,7 +101,7 @@ test.each(files_frames)(
 
     await copyFile(file.path, o_path);
 
-    const frame_cfg = { format: file.format, bits: file.bits };
+    const frame_cfg = { format: file.format as YuvFormat, bits: file.bits };
     const frame = await read(
       file.path,
       [file.dimensions.height, file.dimensions.width],
