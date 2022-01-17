@@ -125,3 +125,64 @@ test("converts yuv 444 to yuv 420", () => {
   expect(yuv420.u).toStrictEqual(new Uint8Array([2]));
   expect(yuv420.v).toStrictEqual(new Uint8Array([3]));
 });
+
+test("converts yuv 444 to yuv 400", () => {
+  const yuv444 = new Yuv(
+    {
+      y: new Uint8Array([1, 1, 1, 1]),
+      u: new Uint8Array([2, 2, 2, 2]),
+      v: new Uint8Array([3, 3, 3, 3]),
+    },
+    2,
+    2,
+    8
+  );
+
+  const yuv400 = yuv444.as("400");
+
+  expect(yuv400.format).toBe("400");
+
+  expect(yuv400.width).toBe(yuv444.width);
+  expect(yuv400.height).toBe(yuv444.height);
+
+  expect(() => {
+    yuv400.widthChroma;
+  }).toThrow();
+  expect(() => {
+    yuv400.heightChroma;
+  }).toThrow();
+
+  expect(yuv400.y).toEqual(yuv444.y);
+  expect(yuv400.u).toBeUndefined();
+  expect(yuv400.v).toBeUndefined();
+});
+
+test("should fail converting from yuv400 to yuv 420", () => {
+  const yuv400 = new Yuv(
+    {
+      y: new Uint8Array([1, 1, 1, 1]),
+    },
+    2,
+    2,
+    8
+  );
+
+  expect(() => {
+    yuv400.as("420");
+  }).toThrow();
+});
+
+test("should fail converting from yuv400 to yuv 444", () => {
+  const yuv400 = new Yuv(
+    {
+      y: new Uint8Array([1, 1, 1, 1]),
+    },
+    2,
+    2,
+    8
+  );
+
+  expect(() => {
+    yuv400.as("444");
+  }).toThrow();
+});
