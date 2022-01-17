@@ -109,9 +109,12 @@ export class Yuv implements IYuv {
     if (this.format === "400") throw Error("Unsupported conversion!");
 
     if (format === "400") {
-      //   return new Yuv({ y: this.y.buffer }, this.width, this.height, this.bits);
-      // TODO
-      throw Error("Not implemented!");
+      return new Yuv(
+        { y: new (Object.getPrototypeOf(this.y).constructor)(this.y) },
+        this.width,
+        this.height,
+        this.bits
+      );
     }
 
     const upsample = (() => {

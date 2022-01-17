@@ -9,12 +9,9 @@ export function nearestNeighbor(
   dims: Dimensions,
   new_dims: Dimensions
 ) {
-  const res: Image = (() => {
-    const sz = new_dims.width * new_dims.height;
-    if (im instanceof Uint8Array) return new Uint8Array(sz);
-    if (im instanceof Uint16Array) return new Uint16Array(sz);
-    return new Uint32Array(sz);
-  })();
+  const res: Image = new (Object.getPrototypeOf(im).constructor)(
+    new_dims.width * new_dims.height
+  );
 
   const ratio: Dimensions = {
     width: dims.width / new_dims.width,
