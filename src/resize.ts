@@ -19,12 +19,11 @@ export function nearestNeighbor(
   };
 
   for (let y = 0; y < new_dims.height; y++) {
+    const ref_y = Math.floor((y + 0.5) * ratio.height);
     for (let x = 0; x < new_dims.width; x++) {
-      let ref_idx = Math.round(y * dims.width * ratio.height + x * ratio.width);
-      if (ref_idx >= im.length) ref_idx = im.length - 1;
-      if (ref_idx < 0) ref_idx = 0;
+      const ref_x = Math.floor((x + 0.5) * ratio.width);
 
-      res[y * new_dims.width + x] = im[ref_idx];
+      res[x * new_dims.height + y] = im[ref_x * dims.height + ref_y];
     }
   }
 
