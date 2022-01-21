@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
+    "module": "esnext",
     "outDir": "dist",
     "preserveConstEnums": true,
     "sourceMap": true,
