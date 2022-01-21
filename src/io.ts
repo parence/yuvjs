@@ -64,6 +64,7 @@ async function read(
   }
 
   const file = await open(src, "r");
+  let offset = idx * FRAME_BYTES;
   const frame: Record<string, YuvComponent> = {};
   for (let index = 0; index < planes.length; index++) {
     const plane = planes[index];
@@ -74,10 +75,11 @@ async function read(
           new dtypes[bytes](Buffer.alloc(dbytes(planeDims(plane)))),
           0,
           dbytes(planeDims(plane)),
-          idx * FRAME_BYTES
+          offset
         )
       ).buffer
     );
+    offset += frame[plane].byteLength;
   }
   file.close();
 
