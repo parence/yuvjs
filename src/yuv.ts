@@ -149,4 +149,42 @@ export class Yuv implements IYuv {
       this.bits
     );
   }
+
+  /*
+    convert to RGBA and return as TypedArray
+    the process is done in 2 steps: 
+        1. conversion to yuv444 - nearest neighbor rescaling for upscaling chroma
+        2. color conversion - following BT.470
+    color conversion matrix: https://en.wikipedia.org/wiki/YUV#SDTV_with_BT.470
+  */
+  asRGBA() {
+    const yuv444 = this.format === "444" ? this : this.as("444");
+    const rgba: YuvComponent = new (Object.getPrototypeOf(this.y).constructor)(
+      this.y.length * 4
+    );
+    for (let index = 0; index < yuv444.y.length; index++) {
+      const max_val = (1 << this.bits) - 1;
+
+      const y = yuv444.y[index] / max_val;
+      const u = yuv444.u![index] / max_val - 0.5;
+      const v = yuv444.v![index] / max_val - 0.5;
+
+      const norm = (num: number) => {
+        return max_val * Math.min(Math.max(num, 0), 1);
+      };
+
+      const idx = index << 2;
+      // BT.601
+      rgba[idx] = norm(y + 1.402 * v);
+      rgba[idx + 1] = norm(y - 0.344 * u - 0.714 * v);
+      rgba[idx + 2] = norm(y + 1.772 * u);
+
+      // BT.470
+      //   rgba[idx] = norm(y + 1.13983 * v);
+      //   rgba[idx + 1] = norm(y - 0.39465 * u - 0.5806 * v);
+      //   rgba[idx + 2] = norm(y + 2.03211 * u);
+      rgba[idx + 3] = max_val;
+    }
+    return rgba;
+  }
 }
