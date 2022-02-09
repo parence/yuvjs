@@ -3,7 +3,18 @@
   "version": "1.0.0",
   "description": "read and write yuv files",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./web": "./dist/web.js"
+  },
   "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "web": [
+        "./dist/web.d.ts"
+      ]
+    }
+  },
   "files": [
     "./dist/"
   ],
