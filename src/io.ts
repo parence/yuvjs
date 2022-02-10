@@ -8,6 +8,8 @@ import {
 } from "./yuv";
 
 export interface FrameCfg {
+  width: number;
+  height: number;
   format?: YuvFormat;
   bits?: number;
   idx?: number;
@@ -18,13 +20,13 @@ read a YUV frame
 */
 async function read(
   src: string,
-  dims: [number, number],
-  cfg?: FrameCfg
+  cfg: FrameCfg
 ): Promise<Yuv> {
   const _cfg: FrameCfg = { ...{ format: "420", bits: 8, idx: 0 }, ...cfg };
   const bits = <number>_cfg.bits;
   const format = <string>_cfg.format;
   const idx = <number>_cfg.idx;
+  const dims = [_cfg.height, _cfg.width];
 
   const dtypes = {
     1: Uint8Array,
