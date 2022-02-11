@@ -159,7 +159,8 @@ export class Yuv implements IYuv {
   */
   asRGBA() {
     const yuv444 = this.format === "444" ? this : this.as("444");
-    const rgba: YuvComponent = new (Object.getPrototypeOf(this.y).constructor)(
+    // const rgba: YuvComponent = new (Object.getPrototypeOf(this.y).constructor)(
+    const rgba: YuvComponent = new Uint8Array(
       this.y.length * 4
     );
     for (let index = 0; index < yuv444.y.length; index++) {
@@ -170,7 +171,7 @@ export class Yuv implements IYuv {
       const v = yuv444.v![index] / max_val - 0.5;
 
       const norm = (num: number) => {
-        return max_val * Math.min(Math.max(num, 0), 1);
+        return 255 * Math.min(Math.max(num, 0), 1);
       };
 
       const idx = index << 2;

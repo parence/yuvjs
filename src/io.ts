@@ -71,16 +71,30 @@ async function read(
   for (let index = 0; index < planes.length; index++) {
     const plane = planes[index];
 
-    frame[plane] = dtypes[bytes].from(
-      (
-        await file.read(
-          new dtypes[bytes](Buffer.alloc(dbytes(planeDims(plane)))),
-          0,
-          dbytes(planeDims(plane)),
-          offset
-        )
-      ).buffer
-    );
+    const plane_raw = (await file.read(
+      new Uint8Array(new ArrayBuffer(bytes * dbytes(planeDims(plane)))),
+      0, bytes * dbytes(planeDims(plane)), offset
+    )).buffer;
+
+    frame[plane] = new dtypes[bytes](dbytes(planeDims(plane)));
+    for (let idx = 0; idx < frame[plane].length; idx++) {
+      frame[plane][idx] = Array(bytes).fill(0).reduce(
+        (val, _, byte_index) => {
+          // assume little endian => TODO implement big endian?
+          return val + (plane_raw[bytes * idx + byte_index] << (8 * byte_index));
+        }, 0
+      );
+    }
+
+    // frame[plane] = new dtypes[bytes](
+    //   (await file.read(
+    //     new dtypes[bytes](
+    //       new ArrayBuffer(bytes * dbytes(planeDims(plane))),
+    //       0,
+    //       dbytes(planeDims(plane))
+    //     ), 0, bytes * dbytes(planeDims(plane)), offset
+    //   )).buffer
+    // );
     offset += frame[plane].byteLength;
   }
   file.close();
