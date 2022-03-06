@@ -1,1 +1,1 @@
-export { Yuv } from "./yuv";
+export { Frame } from "./yuv/frame";

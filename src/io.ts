@@ -1,11 +1,11 @@
 import { open, stat } from "fs/promises";
 import {
-  Yuv,
+  Frame,
   YuvComponents,
   YuvComponent,
   YuvComponentKey,
   YuvFormat,
-} from "./yuv";
+} from "./yuv/frame";
 
 export interface FrameCfg {
   width: number;
@@ -21,7 +21,7 @@ read a YUV frame
 async function read(
   src: string,
   cfg: FrameCfg
-): Promise<Yuv> {
+): Promise<Frame> {
   const _cfg: FrameCfg = { ...{ format: "420", bits: 8, idx: 0 }, ...cfg };
   const bits = <number>_cfg.bits;
   const format = <string>_cfg.format;
@@ -100,13 +100,13 @@ async function read(
   file.close();
 
   const [width, height] = dims;
-  return new Yuv(<YuvComponents>frame, width, height, bits);
+  return new Frame(<YuvComponents>frame, width, height, bits);
 }
 
 /*
 write a yuv frame
 */
-async function write(src: string, frame: Yuv, idx?: number) {
+async function write(src: string, frame: Frame, idx?: number) {
   let offset = (idx || 0) * frame.bytes_per_frame;
 
   (await open(src, "a")).close(); // create an empty file if it does not exist

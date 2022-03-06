@@ -1,4 +1,4 @@
-import { nearestNeighbor } from "./resize";
+import { nearestNeighbor } from "../resize";
 
 export type YuvComponentKey = "y" | "u" | "v";
 export type YuvComponent = Uint8Array | Uint16Array | Uint32Array;
@@ -9,15 +9,7 @@ export type YuvComponents = {
 };
 export type YuvFormat = "444" | "420" | "400";
 
-export interface IYuv {
-  y: YuvComponent;
-  u?: YuvComponent;
-  v?: YuvComponent;
-
-  components: Array<YuvComponentKey>;
-}
-
-export class Yuv implements IYuv {
+export class Frame {
   y: YuvComponent;
   u?: YuvComponent;
   v?: YuvComponent;
@@ -109,7 +101,7 @@ export class Yuv implements IYuv {
     if (this.format === "400") throw Error("Unsupported conversion!");
 
     if (format === "400") {
-      return new Yuv(
+      return new Frame(
         { y: new (Object.getPrototypeOf(this.y).constructor)(this.y) },
         this.width,
         this.height,
@@ -130,7 +122,7 @@ export class Yuv implements IYuv {
         : Math.round(this.heightChroma / 2),
     };
 
-    return new Yuv(
+    return new Frame(
       {
         y: this.y,
         u: nearestNeighbor(
