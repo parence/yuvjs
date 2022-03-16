@@ -1,5 +1,10 @@
 import { nearestNeighbor } from "../resize";
-import { YuvComponent, YuvComponentKey, YuvComponents, YuvFormat } from "./index";
+import {
+  YuvComponent,
+  YuvComponentKey,
+  YuvComponents,
+  YuvFormat
+} from "./index";
 
 export interface FrameCfg {
   width: number;
@@ -45,19 +50,19 @@ export class Frame {
   }
 
   get widthChroma() {
-    if (this.format === "444") return this.width;
-    if (this.format === "420") return Math.round(this.width / 2);
+    if (this.format === YuvFormat.YUV444) return this.width;
+    if (this.format === YuvFormat.YUV420) return Math.round(this.width / 2);
     throw Error(`${this.format} has no chroma component!`);
   }
 
   get heightChroma() {
-    if (this.format === "444") return this.height;
-    if (this.format === "420") return Math.round(this.height / 2);
+    if (this.format === YuvFormat.YUV444) return Math.round(this.height);
+    if (this.format === YuvFormat.YUV420) return Math.round(this.height / 2);
     throw Error(`${this.format} has no chroma component!`);
   }
 
   get format(): YuvFormat {
-    if (!this.u && !this.v) return "400";
+    if (!this.u && !this.v) return YuvFormat.YUV400;
 
     const u_sz = this.u?.length;
     const v_sz = this.v?.length;
@@ -65,8 +70,8 @@ export class Frame {
     if (u_sz !== v_sz)
       throw Error(`U (${u_sz}) and V (${v_sz}) dimensions dot not match!`);
 
-    if (this.y.length === u_sz) return "444";
-    if (0.25 * this.y.length === u_sz) return "420";
+    if (this.y.length === u_sz) return YuvFormat.YUV444;
+    if (0.25 * this.y.length === u_sz) return YuvFormat.YUV420;
 
     throw Error("Invalid format!");
   }
@@ -98,9 +103,9 @@ export class Frame {
     returns a new Yuv object in the specified format
   */
   as(format: YuvFormat) {
-    if (this.format === "400") throw Error("Unsupported conversion!");
+    if (this.format === YuvFormat.YUV400) throw Error("Unsupported conversion!");
 
-    if (format === "400") {
+    if (format === YuvFormat.YUV400) {
       return new Frame(
         { y: new (Object.getPrototypeOf(this.y).constructor)(this.y) },
         this.width,
@@ -110,8 +115,8 @@ export class Frame {
     }
 
     const upsample = (() => {
-      if (this.format === "420" && format === "444") return true;
-      if (this.format === "444" && format === "420") return false;
+      if (this.format === YuvFormat.YUV420 && format === YuvFormat.YUV444) return true;
+      if (this.format === YuvFormat.YUV444 && format === YuvFormat.YUV420) return false;
       throw Error("Unsupported conversion!");
     })();
 
@@ -150,11 +155,9 @@ export class Frame {
     color conversion matrix: https://en.wikipedia.org/wiki/YUV#SDTV_with_BT.470
   */
   asRGBA() {
-    const yuv444 = this.format === "444" ? this : this.as("444");
+    const yuv444 = this.format === YuvFormat.YUV444 ? this : this.as(YuvFormat.YUV444);
     // const rgba: YuvComponent = new (Object.getPrototypeOf(this.y).constructor)(
-    const rgba: YuvComponent = new Uint8Array(
-      this.y.length * 4
-    );
+    const rgba: YuvComponent = new Uint8Array(this.y.length * 4);
     for (let index = 0; index < yuv444.y.length; index++) {
       const max_val = (1 << this.bits) - 1;
 
@@ -167,15 +170,15 @@ export class Frame {
       };
 
       const idx = index << 2;
-      // BT.601
-      rgba[idx] = norm(y + 1.402 * v);
-      rgba[idx + 1] = norm(y - 0.344 * u - 0.714 * v);
-      rgba[idx + 2] = norm(y + 1.772 * u);
+      // // BT.601
+      // rgba[idx] = norm(y + 1.402 * v);
+      // rgba[idx + 1] = norm(y - 0.344 * u - 0.714 * v);
+      // rgba[idx + 2] = norm(y + 1.772 * u);
 
       // BT.470
-      //   rgba[idx] = norm(y + 1.13983 * v);
-      //   rgba[idx + 1] = norm(y - 0.39465 * u - 0.5806 * v);
-      //   rgba[idx + 2] = norm(y + 2.03211 * u);
+        rgba[idx] = norm(y + 1.13983 * v);
+        rgba[idx + 1] = norm(y - 0.39465 * u - 0.5806 * v);
+        rgba[idx + 2] = norm(y + 2.03211 * u);
       rgba[idx + 3] = max_val;
     }
     return rgba;

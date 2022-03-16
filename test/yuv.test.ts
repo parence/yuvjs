@@ -1,4 +1,5 @@
-import { Yuv } from "../src/yuv";
+import { YuvFormat } from "../src/yuv/index";
+import { Frame as Yuv } from "../src/yuv/frame";
 
 test("should have y, u and v components", () => {
   const data = new Uint8Array([]);
@@ -86,9 +87,9 @@ test("converts yuv 420 to yuv 444", () => {
     8
   );
 
-  const yuv444 = yuv420.as("444");
+  const yuv444 = yuv420.as(YuvFormat.YUV444);
 
-  expect(yuv444.format).toBe("444");
+  expect(yuv444.format).toBe(YuvFormat.YUV444);
 
   expect(yuv444.width).toBe(yuv420.width);
   expect(yuv444.height).toBe(yuv420.height);
@@ -112,9 +113,9 @@ test("converts yuv 444 to yuv 420", () => {
     8
   );
 
-  const yuv420 = yuv444.as("420");
+  const yuv420 = yuv444.as(YuvFormat.YUV420);
 
-  expect(yuv420.format).toBe("420");
+  expect(yuv420.format).toBe(YuvFormat.YUV420);
 
   expect(yuv420.width).toBe(yuv444.width);
   expect(yuv420.height).toBe(yuv444.height);
@@ -138,9 +139,9 @@ test("converts yuv 444 to yuv 400", () => {
     8
   );
 
-  const yuv400 = yuv444.as("400");
+  const yuv400 = yuv444.as(YuvFormat.YUV400);
 
-  expect(yuv400.format).toBe("400");
+  expect(yuv400.format).toBe(YuvFormat.YUV400);
 
   expect(yuv400.width).toBe(yuv444.width);
   expect(yuv400.height).toBe(yuv444.height);
@@ -168,7 +169,7 @@ test("should fail converting from yuv400 to yuv 420", () => {
   );
 
   expect(() => {
-    yuv400.as("420");
+    yuv400.as(YuvFormat.YUV420);
   }).toThrow();
 });
 
@@ -183,6 +184,23 @@ test("should fail converting from yuv400 to yuv 444", () => {
   );
 
   expect(() => {
-    yuv400.as("444");
+    yuv400.as(YuvFormat.YUV444);
   }).toThrow();
+});
+
+test("converting yuv formats should return a deep copy", () => {
+  const yuv444 = new Yuv(
+    {
+      y: new Uint8Array([1, 1, 1, 1]),
+      u: new Uint8Array([2, 2, 2, 2]),
+      v: new Uint8Array([3, 3, 3, 3]),
+    },
+    2,
+    2,
+    8
+  );
+
+  const yuv400 = yuv444.as(YuvFormat.YUV400);
+  yuv400.y[0] = 255;
+  expect(yuv444.y[0]).toBe(1);
 });

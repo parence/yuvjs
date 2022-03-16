@@ -15,7 +15,7 @@ async function read(
   src: string,
   cfg: FrameCfg
 ): Promise<Frame> {
-  const _cfg: FrameCfg = { ...{ format: "420", bits: 8, idx: 0 }, ...cfg };
+  const _cfg: FrameCfg = { ...{ format: YuvFormat.YUV420, bits: 8, idx: 0 }, ...cfg };
   const bits = _cfg.bits as number;
   const format = _cfg.format as YuvFormat;
   const idx = _cfg.idx as number;
@@ -38,7 +38,7 @@ async function read(
 
   const planeDims = (plane: YuvComponentKey): [number, number] => {
     const IS_CHROMA = ["u", "v"].includes(plane);
-    const downsample = IS_CHROMA && format === "420" ? 2 : 1;
+    const downsample = IS_CHROMA && format === YuvFormat.YUV420 ? 2 : 1;
     return [dims[0] / downsample, dims[1] / downsample];
   };
 
@@ -46,7 +46,7 @@ async function read(
     return dims[0] * dims[1];
   };
   const planes: Array<YuvComponentKey> =
-    format === "400" ? ["y"] : ["y", "u", "v"];
+    format === YuvFormat.YUV400 ? ["y"] : ["y", "u", "v"];
 
   const FRAME_BYTES =
     bytes * planes.reduce((size, plane) => size + dbytes(planeDims(plane)), 0);
@@ -79,21 +79,12 @@ async function read(
       );
     }
 
-    // frame[plane] = new dtypes[bytes](
-    //   (await file.read(
-    //     new dtypes[bytes](
-    //       new ArrayBuffer(bytes * dbytes(planeDims(plane))),
-    //       0,
-    //       dbytes(planeDims(plane))
-    //     ), 0, bytes * dbytes(planeDims(plane)), offset
-    //   )).buffer
-    // );
     offset += frame[plane].byteLength;
   }
   file.close();
 
   const [width, height] = dims;
-  return new Frame(<YuvComponents>frame, width, height, bits);
+  return new Frame(frame as YuvComponents, width, height, bits);
 }
 
 /*

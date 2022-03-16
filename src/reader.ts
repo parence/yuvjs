@@ -1,5 +1,6 @@
 import { statSync } from 'fs';
-import type { YuvFormat, FrameCfg } from './yuv/index';
+import type { FrameCfg } from './yuv/index';
+import { YuvFormat } from './yuv/index';
 import { read as readYuv } from "./io";
 
 
@@ -7,7 +8,7 @@ export default class Reader {
   constructor(src: string, config: FrameCfg) {
     this.cfg = config;
     if (!this.cfg.bits) this.cfg.bits = 8;
-    if (!this.cfg.format) this.cfg.format = '420';
+    if (!this.cfg.format) this.cfg.format = YuvFormat.YUV420;
     this.src = src;
   }
 
@@ -32,8 +33,8 @@ export default class Reader {
     const pixelsY = this.width * this.height;
 
     let fmtFactor = 1;
-    if (this.format === '420') {fmtFactor = 1.5;}
-    if (this.format === '444') {fmtFactor = 3;}
+    if (this.format === YuvFormat.YUV420) {fmtFactor = 1.5;}
+    if (this.format === YuvFormat.YUV444) {fmtFactor = 3;}
 
     const bytesPerFrame = bytesPerPixel * pixelsY * fmtFactor;
 
