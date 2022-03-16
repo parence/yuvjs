@@ -1,6 +1,5 @@
 import { statSync } from 'fs';
-import type { YuvFormat } from './yuv/frame';
-import type { FrameCfg } from './io';
+import type { YuvFormat, FrameCfg } from './yuv/index';
 import { read as readYuv } from "./io";
 
 

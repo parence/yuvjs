@@ -1,1 +1,1 @@
-export { Frame } from "./yuv/frame";
+export { Frame, FrameCfg } from "./yuv/frame";

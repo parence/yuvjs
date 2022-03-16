@@ -1,19 +1,12 @@
 import { open, stat } from "fs/promises";
 import {
   Frame,
+  FrameCfg,
   YuvComponents,
   YuvComponent,
   YuvComponentKey,
   YuvFormat,
-} from "./yuv/frame";
-
-export interface FrameCfg {
-  width: number;
-  height: number;
-  format?: YuvFormat;
-  bits?: number;
-  idx?: number;
-}
+} from "./yuv/index";
 
 /*
 read a YUV frame
@@ -23,9 +16,9 @@ async function read(
   cfg: FrameCfg
 ): Promise<Frame> {
   const _cfg: FrameCfg = { ...{ format: "420", bits: 8, idx: 0 }, ...cfg };
-  const bits = <number>_cfg.bits;
-  const format = <string>_cfg.format;
-  const idx = <number>_cfg.idx;
+  const bits = _cfg.bits as number;
+  const format = _cfg.format as YuvFormat;
+  const idx = _cfg.idx as number;
   const dims = [_cfg.height, _cfg.width];
 
   const dtypes = {
@@ -43,7 +36,7 @@ async function read(
     return <keyof typeof dtypes>_bytes;
   })();
 
-  const planeDims = (plane: string): [number, number] => {
+  const planeDims = (plane: YuvComponentKey): [number, number] => {
     const IS_CHROMA = ["u", "v"].includes(plane);
     const downsample = IS_CHROMA && format === "420" ? 2 : 1;
     return [dims[0] / downsample, dims[1] / downsample];
@@ -62,7 +55,7 @@ async function read(
   if (idx >= nr_frames) {
     let err = `Can't access frame with idx ${idx}! `;
     err += `The file only has ${nr_frames} frames!`;
-    throw new Error(err);
+    throw new RangeError(err);
   }
 
   const file = await open(src, "r");
@@ -112,14 +105,21 @@ async function write(src: string, frame: Frame, idx?: number) {
   (await open(src, "a")).close(); // create an empty file if it does not exist
   const file = await open(src, "r+");
 
+  const bytes = Math.ceil(frame.bits / 8.0);
+
   for (const component of frame.components) {
-    await file.write(
-      Buffer.from(<YuvComponent>frame[component]),
-      0,
-      null,
-      offset
-    );
-    offset += (<YuvComponent>frame[component]).byteLength;
+    const compData = frame[component] as YuvComponent;
+    const raw = new Uint8Array(compData.length * bytes);
+    for (let idx = 0; idx < compData.length; idx++) {
+      for (let byteIdx = 0; byteIdx < bytes; byteIdx++) {
+        // extract each byte
+        // assume little endian => TODO implement big endian?
+        const mask = (1 << 8 * (byteIdx + 1)) -1;
+        raw[idx * bytes + byteIdx] = (compData[idx] & mask) >> 8 * byteIdx;
+      }
+    }
+    await file.write(raw, 0, null, offset);
+    offset += raw.byteLength;
   }
   file.close();
 }

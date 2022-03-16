@@ -1,13 +1,13 @@
 import { nearestNeighbor } from "../resize";
+import { YuvComponent, YuvComponentKey, YuvComponents, YuvFormat } from "./index";
 
-export type YuvComponentKey = "y" | "u" | "v";
-export type YuvComponent = Uint8Array | Uint16Array | Uint32Array;
-export type YuvComponents = {
-  y: YuvComponent;
-  u?: YuvComponent;
-  v?: YuvComponent;
-};
-export type YuvFormat = "444" | "420" | "400";
+export interface FrameCfg {
+  width: number;
+  height: number;
+  format?: YuvFormat;
+  bits?: number;
+  idx?: number;
+}
 
 export class Frame {
   y: YuvComponent;

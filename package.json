@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "exports": {
     ".": "./dist/index.js",
-    "./web": "./dist/web.js"
+    "./web": "./dist/web.js",
+    "./yuv": "./src/yuv/index.ts"
   },
   "types": "dist/index.d.ts",
   "typesVersions": {
