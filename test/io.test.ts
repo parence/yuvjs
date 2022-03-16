@@ -1,89 +1,91 @@
 import { files as test_files, test_o_path } from "./config";
 import { read, write } from "../src/io";
 import { copyFile, stat } from "fs/promises";
-import { YuvFormat } from "../src/yuv";
+import { YuvFormat, FrameCfg } from '../src/yuv/index';
 
 type TestFileKey = keyof typeof test_files;
+const testFileIDs = Object.keys(test_files) as TestFileKey[];
 
-test.each([
-  [0, "ducks_420"],
-  [10, "ducks_420"],
-  [50, "ducks_420"],
-  [0, "stars_420"],
-  [10, "stars_420"],
-  [50, "stars_420"],
-  [0, "stars_444"],
-  [10, "stars_444"],
-  [50, "stars_444"],
-])(
-  "should throw when reading frame (idx = %d) > #frames in file (%s)",
+test.each(
+  testFileIDs.flatMap((testFileID) => {
+    return [
+      [0, testFileID],
+      [5, testFileID],
+      [9, testFileID]
+    ]
+  })
+)(
+  "should read a  yuv frame (idx = %d) in its correct format",
   async (frame_idx, file_id) => {
-    const file = test_files[<TestFileKey>file_id];
-    const yuv = await read(
-      file.path,
-      [file.dimensions.height, file.dimensions.width],
-      {
-        format: file.format as YuvFormat,
-        bits: file.bits,
-        idx: frame_idx,
-      }
-    );
+    const file = test_files[file_id as TestFileKey];
+    const cfg: FrameCfg = {
+      width: file.dimensions.width,
+      height: file.dimensions.height,
+      format: file.format as YuvFormat,
+      bits: file.bits,
+      idx: frame_idx as number
+    };
+    const yuv = await read(file.path, cfg);
+
     expect(yuv.format).toBe(file.format);
   }
 );
 
-test.each([
-  [500, "ducks_420"],
-  [55, "stars_420"],
-  [1000, "stars_444"],
-])(
+test.each(testFileIDs)(
   "should throw when reading frame (idx = %d) > #frames in file (%s)",
-  async (frame_idx, file_id) => {
-    const _read = async () => {
-      const file = test_files[<TestFileKey>file_id];
-      await read(file.path, [file.dimensions.height, file.dimensions.width], {
-        format: file.format as YuvFormat,
-        bits: file.bits,
-        idx: frame_idx,
-      });
+  async (file_id: TestFileKey) => {
+    const file = test_files[file_id];
+    const cfg: FrameCfg = {
+      width: file.dimensions.width,
+      height: file.dimensions.height,
+      format: file.format as YuvFormat,
+      bits: file.bits,
+      idx: file.frames 
     };
-    await expect(_read).rejects.toThrow();
+    await expect(async () => {await read(file.path, cfg)}).rejects.toThrow();
   }
 );
 
-const files_frames: Array<Array<string | number>> = [];
-const frames = [0, 20, 54];
-const files = Object.keys(test_files);
-// const files = ['stars_444'], frames = [0, 55];
+test.each(testFileIDs)(
+  "should throw when reading frames with bits > 32",
+  async (file_id: TestFileKey) => {
+    const file = test_files[file_id];
+    const cfg: FrameCfg = {
+      width: file.dimensions.width,
+      height: file.dimensions.height,
+      format: file.format as YuvFormat,
+      bits: 33,
+      idx:file.frames 
+    };
+    await expect(async () => {await read(file.path, cfg)}).rejects.toThrow();
+  }
+);
 
-files.forEach((id) => {
-  frames.forEach((idx) => {
-    files_frames.push([id, idx]);
-  });
-});
-test.each(files_frames)(
+test.each(
+  testFileIDs.flatMap((testFileID) => {
+    return [
+      [0, testFileID],
+      [5, testFileID],
+      [9, testFileID]
+    ]
+  })
+)(
   "read and write a yuv frame from file %s with frame index %d",
-  async (file_id, frame_idx) => {
-    // const id = <TestFileKey>Object.keys(test_files)[0];
-    const file = test_files[<TestFileKey>file_id];
+  async (frame_idx, file_id) => {
+    const file = test_files[file_id as TestFileKey];
 
-    const width = file.dimensions.width;
-    const height = file.dimensions.height;
-    const path = file.path;
+    const cfg: FrameCfg = {
+      width: file.dimensions.width,
+      height: file.dimensions.height,
+      format: file.format as YuvFormat,
+      bits: file.bits,
+      idx: frame_idx as number
+    };
 
     const o_path = test_o_path + file_id + "_" + frame_idx + ".yuv";
-
-    const frame_cfg = { format: file.format as YuvFormat, bits: file.bits };
-    const yuv = await read(path, [height, width], {
-      ...frame_cfg,
-      ...{ idx: <number>frame_idx },
-    });
-
+    const yuv = await read(file.path, cfg);
     await write(o_path, yuv, 0);
-    const yuv_test = await read(o_path, [height, width], {
-      ...frame_cfg,
-      ...{ idx: 0 },
-    });
+    const yuv_test = await read(o_path, {...cfg, ...{ idx: 0} });
 
     expect(yuv.components).toStrictEqual(yuv_test.components);
 
@@ -93,37 +95,35 @@ test.each(files_frames)(
   }
 );
 
-test.each(files_frames)(
+test.each(
+  testFileIDs.flatMap((testFileID) => {
+    return [
+      [0, testFileID],
+      [4, testFileID],
+      [7, testFileID]
+    ]
+  })
+)(
   "write a frame of a yuv file %s at a specific position %d",
-  async (file_id, frame_idx) => {
-    const file = test_files[<TestFileKey>file_id];
+  async (frame_idx, file_id) => {
+    const file = test_files[file_id as TestFileKey];
+
+    const cfg: FrameCfg = {
+      width: file.dimensions.width,
+      height: file.dimensions.height,
+      format: file.format as YuvFormat,
+      bits: file.bits,
+      idx: frame_idx as number
+    };
     const o_path = test_o_path + file_id + ".yuv";
 
     await copyFile(file.path, o_path);
-
-    const frame_cfg = { format: file.format as YuvFormat, bits: file.bits };
-    const frame = await read(
-      file.path,
-      [file.dimensions.height, file.dimensions.width],
-      {
-        ...frame_cfg,
-        ...{ idx: <number>frame_idx },
-      }
-    );
-
-    await write(o_path, frame, <number>frame_idx);
+    const frame = await read(file.path, cfg);
+    await write(o_path, frame, frame_idx as number);
 
     expect((await stat(o_path)).size).toBe((await stat(file.path)).size);
 
-    const frame_test = await read(
-      o_path,
-      [file.dimensions.height, file.dimensions.width],
-      {
-        ...frame_cfg,
-        ...{ idx: <number>frame_idx },
-      }
-    );
-
+    const frame_test = await read(o_path, cfg);
     expect(frame_test).toStrictEqual(frame);
   }
 );
