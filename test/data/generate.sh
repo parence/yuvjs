@@ -1,5 +1,7 @@
 #!/bin/bash
 
+opath=$(dirname $(realpath $0))
+
 getDims () {
     meta=`ffprobe -v error -select_streams v -show_entries stream=width,height -of json $mp4`
     width=`echo $meta | jq .streams[0].width`
@@ -32,7 +34,7 @@ transform () {
     ffmpeg -i $mp4 -frames:v $frames -vf scale=$width:-1 -c:v libx265 ${trans_mp4} -y
     height=`ffprobe -v error -select_streams v -show_entries stream=width,height -of json ${trans_mp4} | jq .streams[0].height`
     trans_name="${trans_name}_${width}x${height}_${bits}"
-    ffmpeg -i ${trans_mp4} -pix_fmt ${pix_fmt} "${trans_name}.yuv" -y
+    ffmpeg -i ${trans_mp4} -pix_fmt ${pix_fmt} "${opath}/${trans_name}.yuv" -y
 }
 
 
