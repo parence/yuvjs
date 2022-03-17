@@ -1,6 +1,6 @@
 {
   "name": "yuvjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a library for reading, writing and converting YUV frames",
   "main": "dist/index.js",
   "exports": {
@@ -29,7 +29,14 @@
     "url": "git+ssh://git@github.com/parence/yuvjs.git"
   },
   "keywords": [
-    "yuv, yuv420, yuv444, yuv400, color conversion"
+    "yuv",
+    "yuv420",
+    "yuv444",
+    "yuv400",
+    "ycbcr",
+    "rgb",
+    "color conversion",
+    "frame"
   ],
   "author": "Nicola Giuliani",
   "license": "MIT",
