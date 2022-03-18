@@ -2,13 +2,12 @@
   "name": "yuvjs",
   "version": "1.0.1",
   "description": "a library for reading, writing and converting YUV frames",
-  "main": "dist/index.js",
+  "main": "./src/index.ts",
   "exports": {
     ".": "./dist/index.js",
-    "./web": "./dist/web.js",
-    "./yuv": "./src/yuv/index.ts"
+    "./web": "./dist/web.js"
   },
-  "types": "dist/index.d.ts",
+  "types": "./dist/index.d.ts",
   "typesVersions": {
     "*": {
       "web": [
@@ -17,7 +16,8 @@
     }
   },
   "files": [
-    "./dist/"
+    "src/**/*",
+    "dist/**/*"
   ],
   "scripts": {
     "test": "jest",
