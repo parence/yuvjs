@@ -1,6 +1,6 @@
 {
   "name": "yuvjs",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "a library for reading, writing and converting YUV frames",
   "main": "./src/index.ts",
   "exports": {
